@@ -1,3 +1,3 @@
-from monotone._api import monotonic
+from monotone._api import get_clock_info, monotonic
 
-__all__ = ["monotonic"]
+__all__ = ["get_clock_info", "monotonic"]
