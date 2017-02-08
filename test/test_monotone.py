@@ -7,7 +7,20 @@ import errno
 from monotone import get_clock_info, monotonic
 from monotone import _api, _bindings
 
+import os
+
+import platform
+
 import pytest
+
+needs_posix = pytest.mark.skipif(
+    os.name == "posix" and platform.system() == "Darwin",
+    reason="POSIX-only tests (clock_gettime(3))",
+)
+needs_macos = pytest.mark.skipif(
+    platform.system() != "Darwin",
+    reason="macOS-only tests (mach_absolute_time(3))",
+)
 
 
 @pytest.fixture
@@ -99,7 +112,9 @@ class TestSimpleNamespace(object):
         assert _api._SimpleNamespace(a=1) == _api._SimpleNamespace(a=1)
 
 
-class TestGetClockInfo(object):
+@needs_posix
+class TestGetClockInfoPosix(object):
+
     """
     Tests for L{get_clock_info}.
     """
@@ -165,7 +180,44 @@ class TestGetClockInfo(object):
         assert calls[0][0] == _bindings.lib.CLOCK_MONOTONIC
 
 
-def test_monotonic_fails(apply_failing_clock_call, errno_value, strerror):
+@needs_macos
+class TestGetClockInfoMacOS(object):
+    """
+    Tests for L{get_clock_info}.
+    """
+
+    def test_non_monotonic(self):
+        """
+        L{get_clock_info} only knows about the monotonic clock.
+        """
+        with pytest.raises(ValueError):
+            get_clock_info("not monotonic")
+
+    def test_info(self):
+        """
+        The reported info always includes a nanosecond resolution.
+        """
+
+        expected_info = _api._SimpleNamespace(
+            adjustable=False,
+            implementation="mach_absolute_time()",
+            monotonic=True,
+            resolution=None,    # checked separately
+        )
+
+        expected_resolution = 1e-09
+
+        info = get_clock_info("monotonic")
+        resolution, info.resolution = info.resolution, None
+
+        assert info == expected_info
+        assert resolution - expected_resolution == pytest.approx(0.0)
+
+
+@needs_posix
+def test_monotonic_fails_posix(apply_failing_clock_call,
+                               errno_value,
+                               strerror):
     """
     A failure in C{clock_gettime} results in an L{OSError} that
     presents the failure's errno.
@@ -181,6 +233,7 @@ def test_monotonic_fails(apply_failing_clock_call, errno_value, strerror):
     assert str(exc.value) == strerror
 
 
+@needs_posix
 @given(
     clock_gettime_spec=st.fixed_dictionaries({
         "tv_sec": st.integers(min_value=0, max_value=2 ** 32 - 1),
