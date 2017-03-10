@@ -8,6 +8,10 @@ from setuptools import setup, find_packages
 setup(
     use_incremental=True,
     name='monotone',
+    url="https://github.com/mrwsr/monotone",
+    description=__doc__,
+    author="Mark Williams",
+    author_email="shoprunner-pypi@shoprunner.com",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     setup_requires=["cffi>=1.0.0", "incremental"],

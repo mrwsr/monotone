@@ -1,0 +1,9 @@
+monotone
+
+monotone is a backport of time.monotonic(), time.CLOCK_MONOTONIC, and
+time.get_clock_info('monotonic') from Python 3.3+.
+
+It binds to the platform's monotonic clock API via cffi's API level,
+out-of-line mode.
+
+It supports POSIX and Mach (macOS) APIs.
