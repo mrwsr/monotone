@@ -14,6 +14,7 @@ setup(
     author_email="shoprunner-pypi@shoprunner.com",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
+    include_pacakge_data=True,
     setup_requires=["cffi>=1.0.0", "incremental"],
     cffi_modules=["src/_build.py:ffibuilder"],
     install_requires=["cffi>=1.0.0", "incremental"],
