@@ -7,5 +7,5 @@ Provides monotone version information.
 
 from incremental import Version
 
-__version__ = Version('monotone', 17, 3, 1)
+__version__ = Version('monotone', 17, 3, 2)
 __all__ = ["__version__"]
